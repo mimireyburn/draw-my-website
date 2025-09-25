@@ -1,0 +1,7 @@
+/*/node_modules
+node_modules
+.yarn/
+.vercel*
+.DS_Store
+drawing.json
+dist/
