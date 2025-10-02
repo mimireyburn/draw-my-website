@@ -4,6 +4,7 @@ import { Tldraw, type TLStoreSnapshot, type TLCameraOptions } from 'tldraw'
 import 'tldraw/tldraw.css'
 // import snapshot from '../drawing.json'
 
+const licenseKey = import.meta.env.TLDRAW_LICENSE_KEY || ""
 
 // env var (set in Vercel dashboard):
 const SNAPSHOT_URL = import.meta.env.VITE_SNAPSHOT_URL // || process.env.NEXT_PUBLIC_SNAPSHOT_URL
@@ -49,7 +50,7 @@ export default function App() {
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      <Tldraw snapshot={snapshot} cameraOptions={cameraOptions} hideUi />
+      <Tldraw licenseKey={licenseKey} snapshot={snapshot} cameraOptions={cameraOptions} hideUi />
     </div>
   )
 }
