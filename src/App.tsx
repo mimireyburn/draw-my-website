@@ -4,11 +4,10 @@ import { Tldraw, type TLStoreSnapshot, type TLCameraOptions } from 'tldraw'
 import 'tldraw/tldraw.css'
 // import snapshot from '../drawing.json'
 
-const licenseKey = import.meta.env.TLDRAW_LICENSE_KEY || ""
+const licenseKey = import.meta.env.VITE_TLDRAW_LICENSE_KEY 
 
 // env var (set in Vercel dashboard):
-const SNAPSHOT_URL = import.meta.env.VITE_SNAPSHOT_URL // || process.env.NEXT_PUBLIC_SNAPSHOT_URL
-
+const SNAPSHOT_URL = import.meta.env.VITE_SNAPSHOT_URL 
 const cameraOptions = {
   isLocked: false,
   wheelBehavior: 'pan',
