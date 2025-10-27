@@ -1,6 +1,6 @@
 // App.tsx
 import { useEffect, useState } from 'react'
-import { Tldraw, type TLStoreSnapshot, type TLCameraOptions } from 'tldraw'
+import { Tldraw, Editor, type TLStoreSnapshot, type TLCameraOptions } from 'tldraw'
 import 'tldraw/tldraw.css'
 // import snapshot from '../drawing.json'
 
@@ -49,7 +49,63 @@ export default function App() {
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      <Tldraw licenseKey={licenseKey} snapshot={snapshot} cameraOptions={cameraOptions} hideUi />
+      <Tldraw 
+        licenseKey={licenseKey} 
+        snapshot={snapshot} 
+        cameraOptions={cameraOptions} 
+        hideUi
+        onMount={(editor: Editor) => {
+          // Check if a shape at the given point has a URL
+          const hasUrlAtPoint = (shape: any): boolean => {
+            if (!shape) return false
+            
+            // Check various possible locations for URL
+            // In tldraw, URL shapes might store the URL in different places depending on shape type
+            const url = shape?.props?.url || shape?.url || shape?.meta?.url
+            return !!(url && typeof url === 'string' && url.length > 0)
+          }
+
+          // Handle clicks on shapes with URLs
+          const handleClick = (e: MouseEvent) => {
+            // Get the shape at the click point
+            const clickPoint = editor.inputs.currentPagePoint
+            const hitShape = editor.getShapeAtPoint(clickPoint)
+            
+            if (hitShape && hasUrlAtPoint(hitShape)) {
+              // Prevent default behavior and navigate to URL
+              e.preventDefault()
+              e.stopPropagation()
+              const shape = hitShape as any
+              const url = shape?.props?.url || shape?.url
+              window.open(url, '_blank')
+            }
+          }
+
+          // Handle mouse move to change cursor
+          const handleMouseMove = () => {
+            const hoverPoint = editor.inputs.currentPagePoint
+            const hitShape = editor.getShapeAtPoint(hoverPoint)
+            const container = editor.getContainer()
+            
+            if (hitShape && hasUrlAtPoint(hitShape)) {
+              container.setAttribute('data-clickable', 'true')
+            } else {
+              container.removeAttribute('data-clickable')
+            }
+          }
+
+          // Add event listeners to the editor container
+          const container = editor.getContainer()
+          container.addEventListener('click', handleClick, true)
+          container.addEventListener('mousemove', handleMouseMove, true)
+          
+          // Cleanup on unmount
+          return () => {
+            container.removeEventListener('click', handleClick, true)
+            container.removeEventListener('mousemove', handleMouseMove, true)
+          }
+        }}
+      />
     </div>
   )
 }

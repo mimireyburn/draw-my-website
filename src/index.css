@@ -5,3 +5,12 @@ body {
 	font-family: 'Inter', sans-serif;
 	overscroll-behavior: none;
 }
+
+/* Force pointer cursor for clickable shapes */
+.tl-container[data-clickable="true"] {
+	cursor: pointer !important;
+}
+
+.tl-container[data-clickable="true"] * {
+	cursor: pointer !important;
+}
