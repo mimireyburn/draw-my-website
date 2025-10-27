@@ -65,8 +65,53 @@ export default function App() {
             return !!(url && typeof url === 'string' && url.length > 0)
           }
 
-          // Handle clicks on shapes with URLs
-          const handleClick = (e: MouseEvent) => {
+          // Track drag state
+          let isDragging = false
+          let mouseDownPoint: { x: number; y: number } | null = null
+          const DRAG_THRESHOLD = 5 // pixels
+
+          // Handle mouse down
+          const handleMouseDown = () => {
+            isDragging = false
+            mouseDownPoint = {
+              x: editor.inputs.currentPagePoint.x,
+              y: editor.inputs.currentPagePoint.y
+            }
+          }
+
+          // Handle mouse move to detect dragging
+          const handleMouseMove = () => {
+            if (mouseDownPoint) {
+              const currentPoint = editor.inputs.currentPagePoint
+              const distance = Math.sqrt(
+                Math.pow(currentPoint.x - mouseDownPoint.x, 2) + 
+                Math.pow(currentPoint.y - mouseDownPoint.y, 2)
+              )
+              
+              if (distance > DRAG_THRESHOLD) {
+                isDragging = true
+              }
+            }
+            
+            // Update cursor based on hover
+            const hoverPoint = editor.inputs.currentPagePoint
+            const hitShape = editor.getShapeAtPoint(hoverPoint)
+            const container = editor.getContainer()
+            
+            if (hitShape && hasUrlAtPoint(hitShape)) {
+              container.setAttribute('data-clickable', 'true')
+            } else {
+              container.removeAttribute('data-clickable')
+            }
+          }
+
+          // Handle mouse up / click
+          const handleMouseUp = (e: MouseEvent) => {
+            if (isDragging) {
+              mouseDownPoint = null
+              return
+            }
+
             // Get the shape at the click point
             const clickPoint = editor.inputs.currentPagePoint
             const hitShape = editor.getShapeAtPoint(clickPoint)
@@ -79,30 +124,21 @@ export default function App() {
               const url = shape?.props?.url || shape?.url
               window.open(url, '_blank')
             }
-          }
 
-          // Handle mouse move to change cursor
-          const handleMouseMove = () => {
-            const hoverPoint = editor.inputs.currentPagePoint
-            const hitShape = editor.getShapeAtPoint(hoverPoint)
-            const container = editor.getContainer()
-            
-            if (hitShape && hasUrlAtPoint(hitShape)) {
-              container.setAttribute('data-clickable', 'true')
-            } else {
-              container.removeAttribute('data-clickable')
-            }
+            mouseDownPoint = null
           }
 
           // Add event listeners to the editor container
           const container = editor.getContainer()
-          container.addEventListener('click', handleClick, true)
+          container.addEventListener('mousedown', handleMouseDown, true)
           container.addEventListener('mousemove', handleMouseMove, true)
+          container.addEventListener('mouseup', handleMouseUp, true)
           
           // Cleanup on unmount
           return () => {
-            container.removeEventListener('click', handleClick, true)
+            container.removeEventListener('mousedown', handleMouseDown, true)
             container.removeEventListener('mousemove', handleMouseMove, true)
+            container.removeEventListener('mouseup', handleMouseUp, true)
           }
         }}
       />
